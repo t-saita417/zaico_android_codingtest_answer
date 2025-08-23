@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -34,25 +35,33 @@ class AddActivity : AppCompatActivity() {
     private fun observeViewModel() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { uiState ->
-                    when (uiState) {
-                        AddViewModel.UiState.Initial -> {
-                            initView()
-                        }
+                launch {
+                    viewModel.uiState.collect { uiState ->
+                        when (uiState) {
+                            AddViewModel.UiState.Initial -> {
+                                initView()
+                            }
 
-                        AddViewModel.UiState.Loading -> {
-                            // TODO:通信中表示
-                        }
+                            AddViewModel.UiState.Loading -> {
+                                // TODO:通信中表示
+                            }
 
-                        is AddViewModel.UiState.Success -> {
-                            Toast.makeText(this@AddActivity, "登録に成功しました data id = ${uiState.data.dataId}", Toast.LENGTH_LONG).show()
-                            clearForms()
-                        }
+                            is AddViewModel.UiState.Success -> {
+                                Toast.makeText(this@AddActivity, "登録に成功しました data id = ${uiState.data.dataId}", Toast.LENGTH_LONG).show()
+                                clearForms()
+                            }
 
-                        is AddViewModel.UiState.Error -> {
-                            // TODO:登録エラーの案内 ダイアログ表示→ボタン押下でリトライなどが適当？仮でToast出しておく
-                            Toast.makeText(this@AddActivity, "登録に失敗しました ${uiState.e}", Toast.LENGTH_LONG).show()
+                            is AddViewModel.UiState.Error -> {
+                                // TODO:登録エラーの案内 ダイアログ表示→ボタン押下でリトライなどが適当？仮でToast出しておく
+                                Toast.makeText(this@AddActivity, "登録に失敗しました ${uiState.e}", Toast.LENGTH_LONG).show()
+                            }
                         }
+                    }
+                }
+
+                launch {
+                    viewModel.isAddButtonEnabled.collect { isEnabled ->
+                        binding.addButton.isEnabled = isEnabled
                     }
                 }
             }
@@ -68,14 +77,15 @@ class AddActivity : AppCompatActivity() {
             }
         }
 
-        binding.addButton.apply {
-            // TODO:必要な項目が入力されていたらボタンを有効化
-            this.setOnClickListener {
-                val data = AddInventoryRequest(
-                    title = binding.titleEdit.text.toString()
-                )
-                viewModel.addInventory(data)
-            }
+        binding.titleEdit.addTextChangedListener {
+            viewModel.onTitleChanged(it.toString())
+        }
+
+        binding.addButton.setOnClickListener {
+            val data = AddInventoryRequest(
+                title = binding.titleEdit.text.toString()
+            )
+            viewModel.addInventory(data)
         }
     }
 
@@ -84,5 +94,6 @@ class AddActivity : AppCompatActivity() {
      */
     private fun clearForms() {
         binding.titleEdit.text.clear()
+        viewModel.clearInput()
     }
 }
