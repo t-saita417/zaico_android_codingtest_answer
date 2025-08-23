@@ -4,12 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import jp.co.zaico.codingtest.core.model.Inventory
 import jp.co.zaico.codingtest.databinding.FragmentInventoryDetailBinding
 import kotlinx.coroutines.launch
 
@@ -64,7 +66,8 @@ class InventoryDetailFragment : Fragment() {
                         }
 
                         is InventoryDetailViewModel.UiState.Error -> {
-                            // TODO:データ取得エラー表示
+                            // TODO:全画面エラーからのPullToRefreshでリトライなどが適当？仮でToast出しておく
+                            Toast.makeText(requireContext(), "情報の取得に失敗しました ${uiState.e}", Toast.LENGTH_LONG).show()
                         }
                     }
                 }

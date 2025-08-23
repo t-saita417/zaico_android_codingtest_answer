@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import jp.co.zaico.codingtest.core.model.Inventory
 import jp.co.zaico.codingtest.databinding.FragmentInventoryListBinding
 import kotlinx.coroutines.launch
 import kotlin.getValue
@@ -84,7 +86,8 @@ class InventoryListFragment : Fragment() {
                         }
 
                         is InventoryListViewModel.UiState.Error -> {
-                            // TODO:データ取得エラー表示
+                            // TODO:全画面エラーからのPullToRefreshでリトライなどが適当？仮でToast出しておく
+                            Toast.makeText(requireContext(), "情報の取得に失敗しました ${uiState.e}", Toast.LENGTH_LONG).show()
                         }
                     }
                 }
