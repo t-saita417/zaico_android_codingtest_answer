@@ -1,5 +1,6 @@
 package jp.co.zaico.codingtest.core.data
 
+
 import android.annotation.SuppressLint
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -14,16 +15,13 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import jp.co.zaico.codingtest.Inventory
+import jp.co.zaico.codingtest.core.model.Inventory
 import jp.co.zaico.codingtest.R
 import jp.co.zaico.codingtest.core.model.AddInventoryRequest
 import jp.co.zaico.codingtest.core.model.AddInventoryResponse
 import jp.co.zaico.codingtest.di.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ZaicoRepositoryImpl @Inject constructor(
@@ -31,52 +29,48 @@ class ZaicoRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationContext private val context: Context
 ) : ZaicoRepository {
-    override suspend fun getInventories(): List<Inventory> {
-        val response: HttpResponse = httpClient.get(
-            String.format("%s/api/v1/inventories", context.getString(R.string.api_endpoint))
-        ) {
-            header("Authorization", String.format("Bearer %s", context.getString(R.string.api_token)))
+    override suspend fun getInventories(): Result<List<Inventory>> = withContext(ioDispatcher) {
+        try {
+            val response: HttpResponse = httpClient.get(
+                String.format("%s/api/v1/inventories", context.getString(R.string.api_endpoint))
+            ) {
+                header("Authorization", String.format("Bearer %s", context.getString(R.string.api_token)))
+            }
+            println("response json = ${response.bodyAsText()}")
+            if (response.status != HttpStatusCode.OK) {
+                // TODO:エラーメッセージ返すようにしたい
+                throw RuntimeException("http status is not OK")
+            } else {
+                val data: List<Inventory> = response.body()
+                return@withContext Result.Success(data)
+            }
+        } catch (e: Exception) {
+            return@withContext Result.Error(e)
         }
-
-        // TODO:結果取れなかった場合の処理
-        // TODO:Jsonパースもfor文使わず書けそう
-        val items = mutableListOf<Inventory>()
-
-        val jsonText = response.bodyAsText()
-        println("response $jsonText")
-        val jsonArray: JsonArray = Json.parseToJsonElement(jsonText).jsonArray
-        for (json in jsonArray) {
-            items.add(
-                Inventory(
-                    id = json.jsonObject["id"].toString().replace(""""""", "").toInt(),
-                    title = json.jsonObject["title"].toString().replace(""""""", ""),
-                    quantity = json.jsonObject["quantity"].toString().replace(""""""", "")
-                )
-            )
-        }
-
-        return items.toList()
     }
 
     @SuppressLint("DefaultLocale")
-    override suspend fun getInventory(inventoryId: Int): Inventory {
-        val response: HttpResponse = httpClient.get(
-            String.format("%s/api/v1/inventories/%d", context.getString(R.string.api_endpoint), inventoryId)
-        ) {
-            header("Authorization", String.format("Bearer %s", context.getString(R.string.api_token)))
+    override suspend fun getInventory(inventoryId: Int): Result<Inventory> = withContext(ioDispatcher) {
+        try {
+            val response: HttpResponse = httpClient.get(
+                String.format("%s/api/v1/inventories/%d", context.getString(R.string.api_endpoint), inventoryId)
+            ) {
+                header("Authorization", String.format("Bearer %s", context.getString(R.string.api_token)))
+            }
+            println("response json = ${response.bodyAsText()}")
+            if (response.status != HttpStatusCode.OK) {
+                // TODO:エラーメッセージ返すようにしたい
+                throw RuntimeException("http status is not OK")
+            } else {
+                val data: Inventory = response.body()
+                return@withContext Result.Success(data)
+            }
+        } catch (e: Exception) {
+            return@withContext Result.Error(e)
         }
-
-        val jsonText = response.bodyAsText()
-        val json = Json.parseToJsonElement(jsonText).jsonObject
-
-        return Inventory(
-            id = json["id"].toString().replace(""""""", "").toInt(),
-            title = json["title"].toString().replace(""""""", ""),
-            quantity = json["quantity"].toString().replace(""""""", "")
-        )
     }
 
-    override suspend fun addInventory(request: AddInventoryRequest): Result<AddInventoryResponse> {
+    override suspend fun addInventory(request: AddInventoryRequest): Result<AddInventoryResponse> = withContext(ioDispatcher) {
         try {
             val response = httpClient.post(
                 urlString = String.format("%s/api/v1/inventories", context.getString(R.string.api_endpoint))
@@ -85,15 +79,16 @@ class ZaicoRepositoryImpl @Inject constructor(
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }
+            println("response json = ${response.bodyAsText()}")
             if (response.status != HttpStatusCode.OK) {
                 // TODO:エラーメッセージ返すようにしたい
                 throw RuntimeException("http status is not OK")
             } else {
-                val data = Json.decodeFromString<AddInventoryResponse>(response.body())
-                return Result.Success(data)
+                val data: AddInventoryResponse = response.body()
+                return@withContext Result.Success(data)
             }
         } catch (e: Exception) {
-            return Result.Error(e)
+            return@withContext Result.Error(e)
         }
     }
 }

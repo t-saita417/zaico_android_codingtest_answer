@@ -3,7 +3,9 @@ package jp.co.zaico.codingtest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import jp.co.zaico.codingtest.core.data.Result
 import jp.co.zaico.codingtest.core.data.ZaicoRepository
+import jp.co.zaico.codingtest.core.model.Inventory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -18,7 +20,7 @@ class InventoryListViewModel @Inject constructor(
         data object Initial : UiState
         data object Loading : UiState
         data class DataFetched(val data: List<Inventory>) : UiState
-        data class Error(val e: Exception?) : UiState
+        data class Error(val e: Throwable?) : UiState
     }
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Initial)
@@ -27,13 +29,20 @@ class InventoryListViewModel @Inject constructor(
     fun getInventories() {
         _uiState.value = UiState.Loading
         viewModelScope.launch {
-            val result = zaicoRepository.getInventories()
-            // TODO:resultのエラーチェック。Result型定義して返却するようにしたい
-//            if (result is Result.Success) {
-            _uiState.value = UiState.DataFetched(result)
-//            } else {
-//                _uiState.value = UiState.Error(result.e)
-//            }
+            zaicoRepository.getInventories().let {
+                println("getInventories result $it")
+                when (it) {
+                    is Result.Success -> {
+                        println("getInventories success ${it.data}")
+                        _uiState.value = UiState.DataFetched(it.data)
+                    }
+
+                    is Result.Error -> {
+                        println("getInventories error ${it.exception}")
+                        _uiState.value = UiState.Error(it.exception)
+                    }
+                }
+            }
         }
     }
 

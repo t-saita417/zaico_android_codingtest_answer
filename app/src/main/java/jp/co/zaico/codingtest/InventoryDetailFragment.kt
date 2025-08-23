@@ -4,12 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import jp.co.zaico.codingtest.core.model.Inventory
 import jp.co.zaico.codingtest.databinding.FragmentInventoryDetailBinding
 import kotlinx.coroutines.launch
 
@@ -49,6 +51,7 @@ class InventoryDetailFragment : Fragment() {
                 viewModel.uiState.collect { uiState ->
                     when (uiState) {
                         InventoryDetailViewModel.UiState.Initial -> {
+                            binding.progress.visibility = View.GONE
                             initView()
                             requireArguments().getString("inventoryId")?.toIntOrNull()?.let { id ->
                                 viewModel.getInventory(id)
@@ -56,15 +59,18 @@ class InventoryDetailFragment : Fragment() {
                         }
 
                         InventoryDetailViewModel.UiState.Loading -> {
-                            // TODO:読み込み中表示
+                            binding.progress.visibility = View.VISIBLE
                         }
 
                         is InventoryDetailViewModel.UiState.DataFetched -> {
+                            binding.progress.visibility = View.GONE
                             updateView(uiState.data)
                         }
 
                         is InventoryDetailViewModel.UiState.Error -> {
-                            // TODO:データ取得エラー表示
+                            binding.progress.visibility = View.GONE
+                            // TODO:全画面エラーからのPullToRefreshでリトライなどが適当？仮でToast出しておく
+                            Toast.makeText(requireContext(), "情報の取得に失敗しました ${uiState.e}", Toast.LENGTH_LONG).show()
                         }
                     }
                 }

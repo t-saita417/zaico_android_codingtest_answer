@@ -8,7 +8,11 @@ import jp.co.zaico.codingtest.core.data.ZaicoRepository
 import jp.co.zaico.codingtest.core.model.AddInventoryRequest
 import jp.co.zaico.codingtest.core.model.AddInventoryResponse
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,6 +29,18 @@ class AddViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Initial)
     val uiState = _uiState.asStateFlow()
+
+    private val _title = MutableStateFlow("")
+    val title = _title.asStateFlow()
+
+    // 登録するボタンを有効化するかどうか
+    val isAddButtonEnabled: StateFlow<Boolean> = _title.map { title ->
+        title.isNotBlank()
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = false
+    )
 
     fun addInventory(data: AddInventoryRequest) {
         _uiState.value = UiState.Loading
@@ -44,5 +60,13 @@ class AddViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun clearInput() {
+        _title.value = ""
+    }
+
+    fun onTitleChanged(title: String) {
+        _title.value = title
     }
 }
