@@ -7,17 +7,23 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.os.bundleOf
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import jp.co.zaico.codingtest.databinding.FragmentFirstBinding
+import kotlin.getValue
 
+@AndroidEntryPoint
 class FirstFragment : Fragment() {
 
     private var _binding: FragmentFirstBinding? = null
+
+    private val viewmodel: FirstViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,9 +35,6 @@ class FirstFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        val _viewModel = FirstViewModel(context!!)
-
         val _layoutManager = LinearLayoutManager(context!!)
         val _dividerItemDecoration = DividerItemDecoration(
             context!!,
@@ -50,7 +53,7 @@ class FirstFragment : Fragment() {
             it.adapter = _adapter
         }
 
-        _viewModel.getInventories().apply {
+        viewmodel.getInventories().apply {
             _adapter.submitList(this)
         }
 
@@ -98,5 +101,4 @@ class MyAdapter(
             itemClickListener.itemClick(_item)
         }
     }
-
 }

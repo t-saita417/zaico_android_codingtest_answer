@@ -5,11 +5,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
+import dagger.hilt.android.AndroidEntryPoint
 import jp.co.zaico.codingtest.databinding.FragmentSecondBinding
 
+@AndroidEntryPoint
 class SecondFragment : Fragment() {
 
     private var _binding: FragmentSecondBinding? = null
+    private val viewModel: SecondViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -23,11 +27,9 @@ class SecondFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val inventoryId = arguments!!.getString("inventoryId")!!.toInt()
+        val inventoryId = requireArguments().getString("inventoryId")!!.toInt()
 
-        val _viewModel = SecondViewModel(context!!)
-
-        val inventory = _viewModel.getInventory(inventoryId)
+        val inventory = viewModel.getInventory(inventoryId)
         initView(inventory)
 
     }
