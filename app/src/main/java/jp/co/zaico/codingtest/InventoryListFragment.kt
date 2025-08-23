@@ -73,19 +73,22 @@ class InventoryListFragment : Fragment() {
                 viewModel.uiState.collect { uiState ->
                     when (uiState) {
                         InventoryListViewModel.UiState.Initial -> {
+                            binding.progress.visibility = View.GONE
                             initView()
                             viewModel.getInventories()
                         }
 
                         InventoryListViewModel.UiState.Loading -> {
-                            // TODO:読み込み中表示
+                            binding.progress.visibility = View.VISIBLE
                         }
 
                         is InventoryListViewModel.UiState.DataFetched -> {
+                            binding.progress.visibility = View.GONE
                             adapter.submitList(uiState.data)
                         }
 
                         is InventoryListViewModel.UiState.Error -> {
+                            binding.progress.visibility = View.GONE
                             // TODO:全画面エラーからのPullToRefreshでリトライなどが適当？仮でToast出しておく
                             Toast.makeText(requireContext(), "情報の取得に失敗しました ${uiState.e}", Toast.LENGTH_LONG).show()
                         }

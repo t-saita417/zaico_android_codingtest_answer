@@ -3,6 +3,7 @@ package jp.co.zaico.codingtest
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -39,19 +40,22 @@ class AddActivity : AppCompatActivity() {
                     viewModel.uiState.collect { uiState ->
                         when (uiState) {
                             AddViewModel.UiState.Initial -> {
+                                binding.progress.visibility = View.GONE
                                 initView()
                             }
 
                             AddViewModel.UiState.Loading -> {
-                                // TODO:通信中表示
+                                binding.progress.visibility = View.VISIBLE
                             }
 
                             is AddViewModel.UiState.Success -> {
+                                binding.progress.visibility = View.GONE
                                 Toast.makeText(this@AddActivity, "登録に成功しました data id = ${uiState.data.dataId}", Toast.LENGTH_LONG).show()
                                 clearForms()
                             }
 
                             is AddViewModel.UiState.Error -> {
+                                binding.progress.visibility = View.GONE
                                 // TODO:登録エラーの案内 ダイアログ表示→ボタン押下でリトライなどが適当？仮でToast出しておく
                                 Toast.makeText(this@AddActivity, "登録に失敗しました ${uiState.e}", Toast.LENGTH_LONG).show()
                             }

@@ -51,6 +51,7 @@ class InventoryDetailFragment : Fragment() {
                 viewModel.uiState.collect { uiState ->
                     when (uiState) {
                         InventoryDetailViewModel.UiState.Initial -> {
+                            binding.progress.visibility = View.GONE
                             initView()
                             requireArguments().getString("inventoryId")?.toIntOrNull()?.let { id ->
                                 viewModel.getInventory(id)
@@ -58,14 +59,16 @@ class InventoryDetailFragment : Fragment() {
                         }
 
                         InventoryDetailViewModel.UiState.Loading -> {
-                            // TODO:読み込み中表示
+                            binding.progress.visibility = View.VISIBLE
                         }
 
                         is InventoryDetailViewModel.UiState.DataFetched -> {
+                            binding.progress.visibility = View.GONE
                             updateView(uiState.data)
                         }
 
                         is InventoryDetailViewModel.UiState.Error -> {
+                            binding.progress.visibility = View.GONE
                             // TODO:全画面エラーからのPullToRefreshでリトライなどが適当？仮でToast出しておく
                             Toast.makeText(requireContext(), "情報の取得に失敗しました ${uiState.e}", Toast.LENGTH_LONG).show()
                         }
