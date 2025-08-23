@@ -21,6 +21,7 @@ import jp.co.zaico.codingtest.core.model.AddInventoryRequest
 import jp.co.zaico.codingtest.core.model.AddInventoryResponse
 import jp.co.zaico.codingtest.di.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ZaicoRepositoryImpl @Inject constructor(
@@ -28,7 +29,7 @@ class ZaicoRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationContext private val context: Context
 ) : ZaicoRepository {
-    override suspend fun getInventories(): Result<List<Inventory>> {
+    override suspend fun getInventories(): Result<List<Inventory>> = withContext(ioDispatcher) {
         try {
             val response: HttpResponse = httpClient.get(
                 String.format("%s/api/v1/inventories", context.getString(R.string.api_endpoint))
@@ -41,15 +42,15 @@ class ZaicoRepositoryImpl @Inject constructor(
                 throw RuntimeException("http status is not OK")
             } else {
                 val data: List<Inventory> = response.body()
-                return Result.Success(data)
+                return@withContext Result.Success(data)
             }
         } catch (e: Exception) {
-            return Result.Error(e)
+            return@withContext Result.Error(e)
         }
     }
 
     @SuppressLint("DefaultLocale")
-    override suspend fun getInventory(inventoryId: Int): Result<Inventory> {
+    override suspend fun getInventory(inventoryId: Int): Result<Inventory> = withContext(ioDispatcher) {
         try {
             val response: HttpResponse = httpClient.get(
                 String.format("%s/api/v1/inventories/%d", context.getString(R.string.api_endpoint), inventoryId)
@@ -62,14 +63,14 @@ class ZaicoRepositoryImpl @Inject constructor(
                 throw RuntimeException("http status is not OK")
             } else {
                 val data: Inventory = response.body()
-                return Result.Success(data)
+                return@withContext Result.Success(data)
             }
         } catch (e: Exception) {
-            return Result.Error(e)
+            return@withContext Result.Error(e)
         }
     }
 
-    override suspend fun addInventory(request: AddInventoryRequest): Result<AddInventoryResponse> {
+    override suspend fun addInventory(request: AddInventoryRequest): Result<AddInventoryResponse> = withContext(ioDispatcher) {
         try {
             val response = httpClient.post(
                 urlString = String.format("%s/api/v1/inventories", context.getString(R.string.api_endpoint))
@@ -84,10 +85,10 @@ class ZaicoRepositoryImpl @Inject constructor(
                 throw RuntimeException("http status is not OK")
             } else {
                 val data: AddInventoryResponse = response.body()
-                return Result.Success(data)
+                return@withContext Result.Success(data)
             }
         } catch (e: Exception) {
-            return Result.Error(e)
+            return@withContext Result.Error(e)
         }
     }
 }
