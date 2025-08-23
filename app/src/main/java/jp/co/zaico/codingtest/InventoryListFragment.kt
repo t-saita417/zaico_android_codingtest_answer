@@ -18,18 +18,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import jp.co.zaico.codingtest.databinding.FragmentFirstBinding
+import jp.co.zaico.codingtest.databinding.FragmentInventoryListBinding
 import kotlinx.coroutines.launch
 import kotlin.getValue
 
 @AndroidEntryPoint
 class FirstFragment : Fragment() {
 
-    private var _binding: FragmentFirstBinding? = null
+    private var _binding: FragmentInventoryListBinding? = null
     private val binding
         get() = _binding!!
 
-    private val viewModel: FirstViewModel by viewModels()
+    private val viewModel: InventoryListViewModel by viewModels()
 
     private val adapter = MyAdapter(object : MyAdapter.OnItemClickListener {
         override fun itemClick(item: Inventory) {
@@ -42,7 +42,7 @@ class FirstFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentFirstBinding.inflate(layoutInflater)
+        _binding = FragmentInventoryListBinding.inflate(layoutInflater)
         return binding.root
     }
 
@@ -67,20 +67,20 @@ class FirstFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { uiState ->
                     when (uiState) {
-                        FirstViewModel.UiState.Initial -> {
+                        InventoryListViewModel.UiState.Initial -> {
                             initView()
                             viewModel.getInventories()
                         }
 
-                        FirstViewModel.UiState.Loading -> {
+                        InventoryListViewModel.UiState.Loading -> {
                             // TODO:読み込み中表示
                         }
 
-                        is FirstViewModel.UiState.DataFetched -> {
+                        is InventoryListViewModel.UiState.DataFetched -> {
                             adapter.submitList(uiState.data)
                         }
 
-                        is FirstViewModel.UiState.Error -> {
+                        is InventoryListViewModel.UiState.Error -> {
                             // TODO:データ取得エラー表示
                         }
                     }

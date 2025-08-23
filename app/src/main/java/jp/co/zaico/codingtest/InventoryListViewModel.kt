@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class FirstViewModel @Inject constructor(
+class InventoryListViewModel @Inject constructor(
     val zaicoRepository: ZaicoRepository
 ) : ViewModel() {
 
