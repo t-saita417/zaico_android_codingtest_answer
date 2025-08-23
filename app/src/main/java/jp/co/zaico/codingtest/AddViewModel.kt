@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import jp.co.zaico.codingtest.core.data.Result
 import jp.co.zaico.codingtest.core.data.ZaicoRepository
 import jp.co.zaico.codingtest.core.model.AddInventoryRequest
+import jp.co.zaico.codingtest.core.model.AddInventoryResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -18,7 +19,7 @@ class AddViewModel @Inject constructor(
     sealed interface UiState {
         data object Initial : UiState
         data object Loading : UiState
-        data object Success : UiState
+        data class Success(val data: AddInventoryResponse) : UiState
         data class Error(val e: Throwable?) : UiState
     }
 
@@ -29,12 +30,15 @@ class AddViewModel @Inject constructor(
         _uiState.value = UiState.Loading
         viewModelScope.launch {
             zaicoRepository.addInventory(data).let {
+                println("addInventory result $it")
                 when (it) {
                     is Result.Success -> {
-                        _uiState.value = UiState.Success
+                        println("addInventory success ${it.data}")
+                        _uiState.value = UiState.Success(it.data)
                     }
 
                     is Result.Error -> {
+                        println("addInventory error ${it.exception}")
                         _uiState.value = UiState.Error(it.exception)
                     }
                 }

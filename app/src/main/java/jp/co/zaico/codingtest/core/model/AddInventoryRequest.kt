@@ -6,54 +6,54 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AddInventoryRequest(
     val title: String,
-    val quantity: String,
-    val unit: String,
-    val category: String,
-    val state: String,
-    val place: String,
-    val etc: String,
+    val quantity: String? = null,
+    val unit: String? = null,
+    val category: String? = null,
+    val state: String? = null,
+    val place: String? = null,
+    val etc: String? = null,
     @SerialName("group_tag")
-    val groupTag: String,
+    val groupTag: String? = null,
     @SerialName("user_group")
-    val userGroup: String,
-    val code: String,
+    val userGroup: String? = null,
+    val code: String? = null,
     @SerialName("item_image")
-    val itemImage: String,
+    val itemImage: String? = null,
     @SerialName("stocktake_attributes")
-    val stocktakeAttributes: StocktakeAttributes,
+    val stocktakeAttributes: StocktakeAttributes? = null,
     @SerialName("optional_attributes")
-    val optionalAttributes: List<OptionalAttribute>,
+    val optionalAttributes: List<OptionalAttribute>? = null,
     @SerialName("quantity_management_attributes")
-    val quantityManagementAttributes: QuantityManagementAttributes,
+    val quantityManagementAttributes: QuantityManagementAttributes? = null,
     @SerialName("inventory_history")
-    val inventoryHistory: InventoryHistory,
+    val inventoryHistory: InventoryHistory? = null,
     @SerialName("is_quantity_auto_conversion_by_unit")
-    val isQuantityAutoConversionByUnit: String,
+    val isQuantityAutoConversionByUnit: String? = null,
     @SerialName("quantity_auto_conversion_by_unit_name")
-    val quantityAutoConversionByUnitName: String,
+    val quantityAutoConversionByUnitName: String? = null,
     @SerialName("quantity_auto_conversion_by_unit_factor")
-    val quantityAutoConversionByUnitFactor: String
+    val quantityAutoConversionByUnitFactor: String? = null
 )
 
 @Serializable
 data class StocktakeAttributes(
     @SerialName("checked_at")
-    val checkedAt: String
+    val checkedAt: String? = null
 )
 
 @Serializable
 data class OptionalAttribute(
-    val name: String,
-    val value: String
+    val name: String? = null,
+    val value: String? = null
 )
 
 @Serializable
 data class QuantityManagementAttributes(
     @SerialName("order_point_quantity")
-    val orderPointQuantity: String
+    val orderPointQuantity: String? = null
 )
 
 @Serializable
 data class InventoryHistory(
-    val memo: String
+    val memo: String? = null
 )

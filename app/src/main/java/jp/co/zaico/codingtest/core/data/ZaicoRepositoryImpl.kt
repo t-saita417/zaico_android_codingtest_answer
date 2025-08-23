@@ -81,6 +81,7 @@ class ZaicoRepositoryImpl @Inject constructor(
             val response = httpClient.post(
                 urlString = String.format("%s/api/v1/inventories", context.getString(R.string.api_endpoint))
             ) {
+                header("Authorization", String.format("Bearer %s", context.getString(R.string.api_token)))
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }
@@ -92,7 +93,6 @@ class ZaicoRepositoryImpl @Inject constructor(
                 return Result.Success(data)
             }
         } catch (e: Exception) {
-            println("addInventory error $e")
             return Result.Error(e)
         }
     }

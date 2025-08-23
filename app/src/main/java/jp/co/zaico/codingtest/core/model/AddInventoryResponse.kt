@@ -5,9 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AddInventoryResponse(
-    val code: String,
+    val code: Int,
     val status: String,
     val message: String,
     @SerialName("data_id")
-    val dataId: String?
+    val dataId: Int? = null
 )
