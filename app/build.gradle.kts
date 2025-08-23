@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     kotlin("plugin.serialization") version "1.5.31"
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -33,6 +35,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
+        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
     }
     buildFeatures {
         viewBinding = true
@@ -60,4 +63,6 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.android.v164)
 
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
 }
