@@ -22,8 +22,11 @@ import jp.co.zaico.codingtest.databinding.FragmentInventoryListBinding
 import kotlinx.coroutines.launch
 import kotlin.getValue
 
+/**
+ * 在庫一覧画面のFragment
+ */
 @AndroidEntryPoint
-class FirstFragment : Fragment() {
+class InventoryListFragment : Fragment() {
 
     private var _binding: FragmentInventoryListBinding? = null
     private val binding
