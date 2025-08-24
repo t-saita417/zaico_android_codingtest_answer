@@ -4,23 +4,19 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import jp.co.zaico.codingtest.core.data.Result
 import jp.co.zaico.codingtest.core.data.ZaicoRepository
 import jp.co.zaico.codingtest.core.model.AddInventoryRequest
 import jp.co.zaico.codingtest.core.model.AddInventoryResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import java.lang.Exception
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddViewModelTest : FunSpec({
@@ -30,9 +26,9 @@ class AddViewModelTest : FunSpec({
     val testDispatcher = StandardTestDispatcher()
 
     beforeTest {
+        Dispatchers.setMain(testDispatcher)
         repository = mockk()
         viewModel = AddViewModel(repository)
-        Dispatchers.setMain(testDispatcher)
     }
 
     afterTest {
@@ -71,5 +67,64 @@ class AddViewModelTest : FunSpec({
             viewModel.uiState.value shouldBe AddViewModel.UiState.Error(exception)
         }
 
+    }
+    context("isAddButtonEnabledのテスト") {
+        test("値が入力されていない場合、false") {
+            runTest(testDispatcher) {
+                var collectedValue: Boolean? = null
+                val job = launch {
+                    viewModel.isAddButtonEnabled.collect {
+                        collectedValue = it
+                    }
+                }
+
+                advanceUntilIdle()
+                collectedValue shouldBe false
+
+                viewModel.onTitleChanged(" ")
+                advanceUntilIdle()
+
+                collectedValue shouldBe false
+
+                job.cancel()
+            }
+        }
+        test("値が入力されている場合、true") {
+            runTest(testDispatcher) {
+                var collectedValue: Boolean? = null
+                val job = launch {
+                    viewModel.isAddButtonEnabled.collect {
+                        collectedValue = it
+                    }
+                }
+
+                advanceUntilIdle()
+                collectedValue shouldBe false
+
+                viewModel.onTitleChanged("a")
+                advanceUntilIdle()
+
+                collectedValue shouldBe true
+
+                job.cancel()
+            }
+        }
+        test("clearInputのテスト") {
+            runTest(testDispatcher) {
+                viewModel.onTitleChanged("test")
+                advanceUntilIdle()
+                viewModel.clearInput()
+                advanceUntilIdle()
+                viewModel.title.value shouldBe ""
+            }
+
+        }
+        test("onTitleChangedのテスト") {
+            runTest(testDispatcher) {
+                viewModel.onTitleChanged("test")
+                advanceUntilIdle()
+                viewModel.title.value shouldBe "test"
+            }
+        }
     }
 })
