@@ -23,9 +23,9 @@ class InventoryDetailViewModelTest : FunSpec({
     val testDispatcher = StandardTestDispatcher()
 
     beforeTest {
+        Dispatchers.setMain(testDispatcher)
         repository = mockk()
         viewModel = InventoryDetailViewModel(repository)
-        Dispatchers.setMain(testDispatcher)
     }
 
     afterTest {
