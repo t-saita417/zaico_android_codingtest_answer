@@ -17,6 +17,7 @@ import io.mockk.mockk
 import jp.co.zaico.codingtest.R
 import jp.co.zaico.codingtest.core.model.AddInventoryRequest
 import jp.co.zaico.codingtest.core.model.AddInventoryResponse
+import jp.co.zaico.codingtest.core.model.ErrorResponse
 import jp.co.zaico.codingtest.core.model.Inventory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -75,10 +76,15 @@ class ZaicoRepositoryImplTest : FunSpec({
 
         test("異常系 HttpStatusCodeが200以外の場合、Result.Errorを返す") {
             runTest(testDispatcher) {
+                val errorCode = HttpStatusCode.Forbidden
+                val errorMessage = "Could not access API. Please Check Token or enabled API function."
+                val errorResponse = ErrorResponse(message = errorMessage, status = errorCode.value.toString(), code = errorCode.value)
+                val errorResponseJson = testJson.encodeToString(errorResponse)
+
                 val mockEngine = MockEngine {
                     respond(
-                        content = """{"error":"Unauthorized"}""",
-                        status = HttpStatusCode.Unauthorized,
+                        content = errorResponseJson,
+                        status = errorCode,
                         headers = headersOf(HttpHeaders.ContentType, "application/json")
                     )
                 }
@@ -91,7 +97,9 @@ class ZaicoRepositoryImplTest : FunSpec({
                 advanceUntilIdle()
 
                 result.shouldBeInstanceOf<Result.Error>()
-                result.exception.message shouldBe "http status is not OK"
+                val exception = result.exception
+                exception.shouldBeInstanceOf<ZaicoApiException>()
+                exception.text shouldBe errorMessage
             }
         }
 
@@ -107,7 +115,9 @@ class ZaicoRepositoryImplTest : FunSpec({
                 advanceUntilIdle()
 
                 result.shouldBeInstanceOf<Result.Error>()
-                result.exception.message shouldBe "Network error"
+                val exception = result.exception
+                exception.shouldBeInstanceOf<ZaicoApiException>()
+                exception.text shouldBe "Unexpected error occurred."
             }
         }
     }
@@ -137,10 +147,14 @@ class ZaicoRepositoryImplTest : FunSpec({
         }
         test("異常系 HttpStatusCodeが200以外の場合、Result.Errorを返す") {
             runTest(testDispatcher) {
-                val mockEngine = MockEngine { request ->
+                val errorMessage = "Could not access API. Please Check Token or enabled API function."
+                val errorResponse = ErrorResponse(message = errorMessage, status = "error", code = 403)
+                val errorResponseJson = testJson.encodeToString(errorResponse)
+
+                val mockEngine = MockEngine {
                     respond(
-                        content = testJson.encodeToString(Inventory(id = 123, title = "Specific Item", quantity = "1")),
-                        status = HttpStatusCode.NotFound,
+                        content = errorResponseJson,
+                        status = HttpStatusCode.Forbidden,
                         headers = headersOf(HttpHeaders.ContentType, "application/json")
                     )
                 }
@@ -153,24 +167,26 @@ class ZaicoRepositoryImplTest : FunSpec({
                 advanceUntilIdle()
 
                 result.shouldBeInstanceOf<Result.Error>()
-                result.exception.message shouldBe "http status is not OK"
+                val exception = result.exception
+                exception.shouldBeInstanceOf<ZaicoApiException>()
+                exception.text shouldBe errorMessage
             }
         }
         test("異常系 例外発生した場合、Result.Errorを返す") {
             runTest(testDispatcher) {
-                val mockEngine = MockEngine { request ->
-                    throw IOException("Network error")
+                val mockEngine = MockEngine {
+                    throw IOException("test exception")
                 }
-                mockHttpClient = HttpClient(mockEngine) {
-                    install(ContentNegotiation) { json(testJson) }
-                }
+                mockHttpClient = HttpClient(mockEngine)
                 repository = ZaicoRepositoryImpl(mockHttpClient, testDispatcher, mockContext)
 
                 val result = repository.getInventory(123)
                 advanceUntilIdle()
 
                 result.shouldBeInstanceOf<Result.Error>()
-                result.exception.message shouldBe "Network error"
+                val exception = result.exception
+                exception.shouldBeInstanceOf<ZaicoApiException>()
+                exception.text shouldBe "Unexpected error occurred."
             }
         }
     }
@@ -209,9 +225,18 @@ class ZaicoRepositoryImplTest : FunSpec({
 
         test("異常系 HttpStatusCodeが200以外の場合、Result.Errorを返す") {
             runTest(testDispatcher) {
+                val mockErrorPayload = AddInventoryResponse(
+                    message = "Could not access API. Please Check Token or enabled API function.",
+                    code = 403,
+                    status = "error",
+                    dataId = null
+                )
+                val errorResponseJson = testJson.encodeToString(mockErrorPayload)
+
+
                 val mockEngine = MockEngine {
                     respond(
-                        content = """{"error":"Invalid request"}""",
+                        content = errorResponseJson,
                         status = HttpStatusCode.BadRequest,
                         headers = headersOf(HttpHeaders.ContentType, "application/json")
                     )
@@ -225,25 +250,28 @@ class ZaicoRepositoryImplTest : FunSpec({
                 advanceUntilIdle()
 
                 result.shouldBeInstanceOf<Result.Error>()
-                result.exception.message shouldBe "http status is not OK"
+                val exception = result.exception
+                exception.shouldBeInstanceOf<ZaicoApiException>()
+                exception.text shouldBe "Could not access API. Please Check Token or enabled API function."
             }
         }
+
 
         test("異常系 例外発生した場合、Result.Errorを返す") {
             runTest(testDispatcher) {
                 val mockEngine = MockEngine {
-                    throw IOException("Network error")
+                    throw RuntimeException("test Exception")
                 }
-                mockHttpClient = HttpClient(mockEngine) {
-                    install(ContentNegotiation) { json(testJson) }
-                }
+                mockHttpClient = HttpClient(mockEngine)
                 repository = ZaicoRepositoryImpl(mockHttpClient, testDispatcher, mockContext)
 
                 val result = repository.addInventory(testRequest)
                 advanceUntilIdle()
 
                 result.shouldBeInstanceOf<Result.Error>()
-                result.exception.message shouldBe "Network error"
+                val exception = result.exception
+                exception.shouldBeInstanceOf<ZaicoApiException>()
+                exception.text shouldBe "Unexpected error occurred."
             }
         }
     }

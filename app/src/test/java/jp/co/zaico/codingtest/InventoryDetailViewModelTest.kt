@@ -6,6 +6,7 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import jp.co.zaico.codingtest.core.data.Result
+import jp.co.zaico.codingtest.core.data.ZaicoApiException
 import jp.co.zaico.codingtest.core.data.ZaicoRepository
 import jp.co.zaico.codingtest.core.model.Inventory
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +53,7 @@ class InventoryDetailViewModelTest : FunSpec({
 
         test("取得失敗した場合、UiStateがErrorになること") {
             val id = 123
-            val exception = Exception("test exception")
+            val exception = ZaicoApiException("test exception")
             coEvery { repository.getInventory(id) } returns Result.Error(exception)
 
             runTest(testDispatcher) {
@@ -66,9 +67,8 @@ class InventoryDetailViewModelTest : FunSpec({
 
     context("setUiStateErrorのテスト") {
         test("setUiStateError実行後、UiStateがエラーになっていること") {
-            val exception = Exception("test exception")
-            viewModel.setUiStateError(exception)
-            viewModel.uiState.value shouldBe InventoryDetailViewModel.UiState.Error(exception)
+            viewModel.setUiStateError()
+            viewModel.uiState.value shouldBe InventoryDetailViewModel.UiState.Error()
         }
     }
 })
