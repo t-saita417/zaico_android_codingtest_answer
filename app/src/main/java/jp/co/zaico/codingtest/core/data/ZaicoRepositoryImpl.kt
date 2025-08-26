@@ -19,6 +19,7 @@ import jp.co.zaico.codingtest.core.model.Inventory
 import jp.co.zaico.codingtest.R
 import jp.co.zaico.codingtest.core.model.AddInventoryRequest
 import jp.co.zaico.codingtest.core.model.AddInventoryResponse
+import jp.co.zaico.codingtest.core.model.ErrorResponse
 import jp.co.zaico.codingtest.di.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -38,14 +39,14 @@ class ZaicoRepositoryImpl @Inject constructor(
             }
             println("response json = ${response.bodyAsText()}")
             if (response.status != HttpStatusCode.OK) {
-                // TODO:エラーメッセージ返すようにしたい
-                throw RuntimeException("http status is not OK")
+                val data: ErrorResponse = response.body()
+                return@withContext Result.Error(ZaicoApiException(text = data.message))
             } else {
                 val data: List<Inventory> = response.body()
                 return@withContext Result.Success(data)
             }
         } catch (e: Exception) {
-            return@withContext Result.Error(e)
+            return@withContext Result.Error(ZaicoApiException(text = "Unexpected error occurred.", cause = e))
         }
     }
 
@@ -59,14 +60,14 @@ class ZaicoRepositoryImpl @Inject constructor(
             }
             println("response json = ${response.bodyAsText()}")
             if (response.status != HttpStatusCode.OK) {
-                // TODO:エラーメッセージ返すようにしたい
-                throw RuntimeException("http status is not OK")
+                val data: ErrorResponse = response.body()
+                return@withContext Result.Error(ZaicoApiException(data.message))
             } else {
                 val data: Inventory = response.body()
                 return@withContext Result.Success(data)
             }
         } catch (e: Exception) {
-            return@withContext Result.Error(e)
+            return@withContext Result.Error(ZaicoApiException(text = "Unexpected error occurred.", cause = e))
         }
     }
 
@@ -80,20 +81,26 @@ class ZaicoRepositoryImpl @Inject constructor(
                 setBody(request)
             }
             println("response json = ${response.bodyAsText()}")
+            val data: AddInventoryResponse = response.body()
             if (response.status != HttpStatusCode.OK) {
-                // TODO:エラーメッセージ返すようにしたい
-                throw RuntimeException("http status is not OK")
+                return@withContext Result.Error(ZaicoApiException(data.message))
             } else {
-                val data: AddInventoryResponse = response.body()
                 return@withContext Result.Success(data)
             }
         } catch (e: Exception) {
-            return@withContext Result.Error(e)
+            return@withContext Result.Error(ZaicoApiException(text = "Unexpected error occurred.", cause = e))
         }
     }
 }
 
+/**
+ * カスタム例外
+ * @param text エラーメッセージ
+ * @param cause 原因となった例外
+ */
+class ZaicoApiException(val text: String, cause: Throwable? = null) : Exception()
+
 sealed class Result<out T> {
     data class Success<out T>(val data: T) : Result<T>()
-    data class Error(val exception: Throwable) : Result<Nothing>()
+    data class Error(val exception: ZaicoApiException) : Result<Nothing>()
 }

@@ -3,6 +3,7 @@ package jp.co.zaico.codingtest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import jp.co.zaico.codingtest.core.data.ZaicoApiException
 import jp.co.zaico.codingtest.core.data.Result
 import jp.co.zaico.codingtest.core.data.ZaicoRepository
 import jp.co.zaico.codingtest.core.model.AddInventoryRequest
@@ -16,15 +17,26 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * 在庫データ登録画面のViewModel
+ * @param zaicoRepository ZaicoRepository
+ */
 @HiltViewModel
 class AddViewModel @Inject constructor(
     val zaicoRepository: ZaicoRepository
 ) : ViewModel() {
     sealed interface UiState {
+        // 初期状態
         data object Initial : UiState
+
+        // 読み込み中
         data object Loading : UiState
+
+        // 登録成功
         data class Success(val data: AddInventoryResponse) : UiState
-        data class Error(val e: Throwable?) : UiState
+
+        // エラー
+        data class Error(val e: ZaicoApiException) : UiState
     }
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Initial)
@@ -42,6 +54,10 @@ class AddViewModel @Inject constructor(
         initialValue = false
     )
 
+    /**
+     * 在庫データ登録
+     * @param data リクエストパラメータ
+     */
     fun addInventory(data: AddInventoryRequest) {
         _uiState.value = UiState.Loading
         viewModelScope.launch {
@@ -62,10 +78,17 @@ class AddViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 入力値の初期化
+     */
     fun clearInput() {
         _title.value = ""
     }
 
+    /**
+     * titleの値の更新
+     * @param title titleの文字列
+     */
     fun onTitleChanged(title: String) {
         _title.value = title
     }
