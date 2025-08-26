@@ -67,6 +67,9 @@ class InventoryListFragment : Fragment() {
         _binding = null
     }
 
+    /**
+     * UiStateを監視
+     */
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -90,7 +93,7 @@ class InventoryListFragment : Fragment() {
                         is InventoryListViewModel.UiState.Error -> {
                             binding.progress.visibility = View.GONE
                             // TODO:全画面エラーからのPullToRefreshでリトライなどが適当？仮でToast出しておく
-                            Toast.makeText(requireContext(), "情報の取得に失敗しました ${uiState.e}", Toast.LENGTH_LONG).show()
+                            Toast.makeText(requireContext(), "情報の取得に失敗しました ${uiState.e.text}", Toast.LENGTH_LONG).show()
                         }
                     }
                 }
@@ -98,6 +101,9 @@ class InventoryListFragment : Fragment() {
         }
     }
 
+    /**
+     * Viewの初期化
+     */
     private fun initView() {
         val layoutManager = LinearLayoutManager(requireContext())
         val dividerItemDecoration = DividerItemDecoration(

@@ -16,6 +16,9 @@ import jp.co.zaico.codingtest.core.model.AddInventoryRequest
 import jp.co.zaico.codingtest.databinding.ActivityAddBinding
 import kotlinx.coroutines.launch
 
+/**
+ * 在庫データ追加画面のActivity
+ */
 @AndroidEntryPoint
 class AddActivity : AppCompatActivity() {
     lateinit var binding: ActivityAddBinding
@@ -33,6 +36,9 @@ class AddActivity : AppCompatActivity() {
         observeViewModel()
     }
 
+    /**
+     * UiStateを監視
+     */
     private fun observeViewModel() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -57,7 +63,7 @@ class AddActivity : AppCompatActivity() {
                             is AddViewModel.UiState.Error -> {
                                 binding.progress.visibility = View.GONE
                                 // TODO:登録エラーの案内 ダイアログ表示→ボタン押下でリトライなどが適当？仮でToast出しておく
-                                Toast.makeText(this@AddActivity, "登録に失敗しました ${uiState.e}", Toast.LENGTH_LONG).show()
+                                Toast.makeText(this@AddActivity, "登録に失敗しました ${uiState.e.text}", Toast.LENGTH_LONG).show()
                             }
                         }
                     }
@@ -72,10 +78,13 @@ class AddActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Viewの初期化
+     */
     private fun initView() {
         binding.toolbar.apply {
             this.title = getString(R.string.add_activity_label)
-            this.setNavigationIcon(R.drawable.no_image) //TODO:アイコンは仮置き。バツボタンか戻るボタンにする
+            this.setNavigationIcon(R.drawable.outline_close_24)
             this.setNavigationOnClickListener {
                 finish()
             }

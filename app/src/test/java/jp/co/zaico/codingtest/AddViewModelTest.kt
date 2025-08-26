@@ -6,6 +6,7 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import jp.co.zaico.codingtest.core.data.Result
+import jp.co.zaico.codingtest.core.data.ZaicoApiException
 import jp.co.zaico.codingtest.core.data.ZaicoRepository
 import jp.co.zaico.codingtest.core.model.AddInventoryRequest
 import jp.co.zaico.codingtest.core.model.AddInventoryResponse
@@ -55,7 +56,7 @@ class AddViewModelTest : FunSpec({
         }
 
         test("登録失敗した場合、UiStateがErrorになること") {
-            val exception = Exception("test exception")
+            val exception = ZaicoApiException("test exception")
             coEvery { repository.addInventory(any()) } returns Result.Error(exception)
             val data = AddInventoryRequest(title = "test")
 
